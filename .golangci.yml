@@ -1,0 +1,67 @@
+run:
+  skip-files:
+    - ".*\\_test.go$"
+linters-settings:
+  funlen:
+    lines: 100
+    statements: 50
+  gocyclo:
+    min-complexity: 15
+  goimports:
+    local-prefixes: github.com/humweb/inertia-go
+  govet:
+    check-shadowing: true
+  misspell:
+    locale: US
+  nolintlint:
+    allow-unused: false # report any unused nolint directives
+    require-explanation: true # require an explanation for nolint directives
+    require-specific: false # don't require nolint directives to be specific about which linter is being skipped
+  revive:
+    confidence: 0
+    rules:
+      # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md#add-constant
+      - name: add-constant
+        disabled: true
+  stylecheck:
+    # Deprecated: use the global `run.go` instead.
+    go: "1.15"
+    # STxxxx checks in https://staticcheck.io/docs/configuration/options/#checks
+    # Default: ["*"]
+    checks: ["-ST1000"]
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    - dogsled
+    - dupl
+    - errcheck
+    - exportloopref
+    - funlen
+    - gochecknoinits
+    - gocritic
+    - gocyclo
+    - gofumpt
+    - revive
+    - rowserrcheck
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - noctx
+    - nolintlint
+    - staticcheck
+    - stylecheck
+    - sqlclosecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
+
+issues:
+  # enable issues excluded by default 
+  exclude-use-default: false
