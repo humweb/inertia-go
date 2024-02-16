@@ -39,8 +39,10 @@ jobs:
           path: dist
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v4.0.1
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.out
           flags: ${{ runner.os }}
-
+        env:
+          token: ${{ secrets.CODECOV_TOKEN }}
