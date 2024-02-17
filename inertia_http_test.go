@@ -171,6 +171,28 @@ func (suite *InertiaHttpTestSuite) TestWithViewData() {
 	suite.Contains(html.UnescapeString(w.Body.String()), "wtf-dude")
 
 }
+func (suite *InertiaHttpTestSuite) TestMiddleware() {
+	i := New("", "./index_test.html", "")
+	w, r := mockRequest("GET", "/users", Headers{"X-Inertia": "true"})
+	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
+
+	i.Middleware(testHandler).ServeHTTP(w, r)
+	resp := w.Result()
+	suite.Equal(http.StatusOK, resp.StatusCode)
+	suite.Equal("", w.Body.String())
+
+}
+func (suite *InertiaHttpTestSuite) TestMiddlewareRedirect() {
+	i := New("", "./index_test.html", "2")
+	w, r := mockRequest("GET", "/users", Headers{"X-Inertia": "true"})
+	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
+
+	i.Middleware(testHandler).ServeHTTP(w, r)
+	resp := w.Result()
+	suite.Equal(http.StatusConflict, resp.StatusCode)
+	suite.Equal("/users", resp.Header.Get("X-Inertia-Location"))
+
+}
 
 func TestInertiaHttpSuite(t *testing.T) {
 	suite.Run(t, new(InertiaHttpTestSuite))
