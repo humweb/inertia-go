@@ -20,6 +20,54 @@ type InertiaHttpTestSuite struct {
 //
 //}
 
+func (suite *InertiaHttpTestSuite) TestLocationInertiaRequest() {
+	w, r := mockRequest("GET", "/users", Headers{
+		"X-Inertia": "true",
+	})
+
+	i := New("", "", "")
+
+	i.Location(w, r, "/login")
+
+	suite.Equal("/login", w.Header().Get("X-Inertia-Location"))
+	suite.Equal(http.StatusConflict, w.Result().StatusCode)
+}
+
+func (suite *InertiaHttpTestSuite) TestLocationNonInertiaRequest() {
+	w, r := mockRequest("GET", "/users", Headers{})
+
+	i := New("", "", "")
+
+	i.Location(w, r, "/login")
+
+	suite.Equal("/login", w.Result().Header.Get("Location"))
+	suite.Equal(http.StatusFound, w.Result().StatusCode)
+}
+
+func (suite *InertiaHttpTestSuite) TestLocationNonInertiaPostRequest() {
+	w, r := mockRequest("POST", "/users", Headers{})
+
+	i := New("", "", "")
+
+	i.Location(w, r, "/login")
+
+	suite.Equal("/login", w.Result().Header.Get("Location"))
+	suite.Equal(http.StatusSeeOther, w.Result().StatusCode)
+}
+
+func (suite *InertiaHttpTestSuite) TestLocationBackRequest() {
+	w, r := mockRequest("GET", "/users", Headers{
+		"Referer": "/foo",
+	})
+
+	i := New("", "", "")
+
+	i.Back(w, r)
+
+	suite.Equal("/foo", w.Result().Header.Get("Location"))
+	suite.Equal(http.StatusFound, w.Result().StatusCode)
+}
+
 func (suite *InertiaHttpTestSuite) TestShare() {
 
 	w, r := mockRequest("GET", "/users", Headers{
@@ -215,7 +263,7 @@ func TestInertiaHttpSuite(t *testing.T) {
 
 func mockRequest(method string, target string, headers Headers) (*httptest.ResponseRecorder, *http.Request) {
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/users", nil)
+	r := httptest.NewRequest(method, "/users", nil)
 	for key, val := range headers {
 		r.Header.Set(key, val)
 	}

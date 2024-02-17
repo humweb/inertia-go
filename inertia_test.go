@@ -2,6 +2,7 @@ package inertia
 
 import (
 	"context"
+	"errors"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -64,8 +65,43 @@ func (suite *InertiaTestSuite) TestWithViewData() {
 
 	meta, ok := contextViewData["meta"].(string)
 
+	ctx = i.WithViewData(ctx, "foo", "foo")
+
 	suite.True(ok)
 	suite.Equal("test-meta", meta)
+}
+
+func (suite *InertiaTestSuite) TestResolvePropsClosure() {
+
+	val, err := resolvePropVal(func() (any, error) {
+		return "foo", nil
+	})
+	suite.Equal("foo", val)
+	suite.Nil(err)
+
+	val, err = resolvePropVal(func() (any, error) {
+		return nil, errors.New("nothing")
+	})
+	suite.Error(err)
+	suite.Nil(val)
+
+}
+
+func (suite *InertiaTestSuite) TestResolvePropsLazy() {
+
+	val, err := resolvePropVal(LazyProp(func() (any, error) {
+		return "foo", nil
+	}))
+
+	suite.Equal("foo", val)
+	suite.Nil(err)
+
+	val, err = resolvePropVal(LazyProp(func() (any, error) {
+		return nil, errors.New("nothing")
+	}))
+	suite.Error(err)
+	suite.Nil(val)
+
 }
 
 func TestInertiaSuite(t *testing.T) {
