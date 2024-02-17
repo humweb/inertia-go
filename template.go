@@ -2,7 +2,6 @@ package inertia
 
 import (
 	"encoding/json"
-	"errors"
 	"html/template"
 	"strings"
 )
@@ -29,5 +28,5 @@ func Raw(v any) (template.HTML, error) {
 		return template.HTML(elem), nil
 	}
 
-	return "", errors.New("Error with Raw template func")
+	return "", ErrRawTemplateFunc
 }

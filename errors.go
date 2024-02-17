@@ -11,4 +11,7 @@ var (
 
 	// ErrBadSsrStatusCode error.
 	ErrBadSsrStatusCode = errors.New("inertia: bad ssr status code >= 400")
+
+	// ErrBadSsrStatusCode error.
+	ErrRawTemplateFunc = errors.New("inertia: error with raw template func")
 )
