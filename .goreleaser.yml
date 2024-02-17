@@ -8,4 +8,4 @@ changelog:
   filters:
     exclude:
       - '^docs:'
-      - '^test:'
+      - '^tests:'
