@@ -4,6 +4,7 @@ before:
 builds:
   - skip: true
 changelog:
+  use: github
   sort: asc
   filters:
     exclude:
