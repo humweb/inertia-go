@@ -28,6 +28,10 @@ func (suite *InertiaTemplateTestSuite) TestTemplateRaw() {
 	str, err := raw([]string{"wtf", "123"})
 	suite.Nil(err)
 	suite.Equal(template.HTML("wtf\n123"), str)
+
+	str, err = raw("wtf")
+	suite.Nil(err)
+	suite.Equal(template.HTML("wtf"), str)
 }
 
 func (suite *InertiaTemplateTestSuite) TestTemplateRawErr() {
