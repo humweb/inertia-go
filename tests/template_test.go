@@ -1,8 +1,8 @@
 package tests
 
 import (
+	"github.com/humweb/inertia-go"
 	"github.com/stretchr/testify/suite"
-	"go-inertia/server/pkgs/inertia-go"
 	"html/template"
 	"testing"
 )

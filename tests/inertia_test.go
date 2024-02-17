@@ -3,8 +3,8 @@ package tests
 import (
 	"context"
 	"errors"
+	"github.com/humweb/inertia-go"
 	"github.com/stretchr/testify/suite"
-	"go-inertia/server/pkgs/inertia-go"
 	"testing"
 )
 
