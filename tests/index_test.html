@@ -2,9 +2,16 @@
 <html>
 <head>
 <title>Go Inertia</title>
+    {{ if .ssr }}
+        {{ raw .ssr.Head }}
+    {{ end }}
 </head>
 <body>
 {{ .foo }}
-<div id="app" data-page="{{ marshal .page }}"></div>
+{{ if not .ssr }}
+    <div id="app" data-page="{{ marshal .page }}"></div>
+{{ else }}
+    {{ raw .ssr.Body }}
+{{ end }}
 </body>
 </html>
