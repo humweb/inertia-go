@@ -233,9 +233,6 @@ r = r.WithContext(ctx)
 </html>
 ```
 
-## Example Apps
-
-
 ## Reporting Issues
 
 If you are facing a problem with this package or found any bug, please open an issue on [GitHub](https://github.com/humweb/inertia-go/issues).
