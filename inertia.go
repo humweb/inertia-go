@@ -13,24 +13,24 @@ import (
 
 // Inertia type.
 type Inertia struct {
-	url           string
+	Url           string
 	rootTemplate  string
 	version       string
-	sharedProps   Props
-	sharedFuncMap template.FuncMap
+	SharedProps   Props
+	SharedFuncMap template.FuncMap
 	templateFS    fs.FS
-	ssrURL        string
-	ssrClient     *http.Client
+	SsrURL        string
+	SsrClient     *http.Client
 }
 
 // New function.
 func New(url, rootTemplate, version string) *Inertia {
 	return &Inertia{
-		url:           url,
+		Url:           url,
 		rootTemplate:  rootTemplate,
 		version:       version,
-		sharedFuncMap: template.FuncMap{"marshal": marshal, "raw": raw},
-		sharedProps:   Props{},
+		SharedFuncMap: template.FuncMap{"marshal": Marshal, "raw": Raw},
+		SharedProps:   Props{},
 	}
 }
 
@@ -44,13 +44,13 @@ func NewWithFS(url, rootTemplate, version string, templateFS fs.FS) *Inertia {
 
 // IsSsrEnabled function.
 func (i *Inertia) IsSsrEnabled() bool {
-	return i.ssrURL != "" && i.ssrClient != nil
+	return i.SsrURL != "" && i.SsrClient != nil
 }
 
 // EnableSsr function.
 func (i *Inertia) EnableSsr(ssrURL string) {
-	i.ssrURL = ssrURL
-	i.ssrClient = &http.Client{}
+	i.SsrURL = ssrURL
+	i.SsrClient = &http.Client{}
 }
 
 // EnableSsrWithDefault function.
@@ -60,18 +60,18 @@ func (i *Inertia) EnableSsrWithDefault() {
 
 // DisableSsr function.
 func (i *Inertia) DisableSsr() {
-	i.ssrURL = ""
-	i.ssrClient = nil
+	i.SsrURL = ""
+	i.SsrClient = nil
 }
 
 // Share function.
 func (i *Inertia) Share(key string, value any) {
-	i.sharedProps[key] = value
+	i.SharedProps[key] = value
 }
 
 // ShareFunc function.
 func (i *Inertia) ShareFunc(key string, value any) {
-	i.sharedFuncMap[key] = value
+	i.SharedFuncMap[key] = value
 }
 
 // WithProp function.
@@ -130,7 +130,7 @@ func (i *Inertia) WithViewData(ctx context.Context, key string, value any) conte
 // Render function.
 func (i *Inertia) Render(w http.ResponseWriter, r *http.Request, component string, props Props) error {
 
-	preparedProps, err := i.prepareProps(r, component, props)
+	preparedProps, err := i.PrepareProps(r, component, props)
 
 	page := &Page{
 		Component: component,
@@ -221,7 +221,7 @@ func (i *Inertia) isInertiaRequest(r *http.Request) bool {
 }
 
 func (i *Inertia) createRootTemplate() (*template.Template, error) {
-	ts := template.New(filepath.Base(i.rootTemplate)).Funcs(i.sharedFuncMap)
+	ts := template.New(filepath.Base(i.rootTemplate)).Funcs(i.SharedFuncMap)
 
 	if i.templateFS != nil {
 		return ts.ParseFS(i.templateFS, i.rootTemplate)
@@ -238,7 +238,7 @@ func (i *Inertia) ssr(page *Page) (*Ssr, error) {
 
 	req, err := http.NewRequest(
 		http.MethodPost,
-		strings.ReplaceAll(i.ssrURL, "/render", "")+"/render",
+		strings.ReplaceAll(i.SsrURL, "/render", "")+"/render",
 		bytes.NewBuffer(body),
 	)
 	if err != nil {
@@ -247,7 +247,7 @@ func (i *Inertia) ssr(page *Page) (*Ssr, error) {
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := i.ssrClient.Do(req)
+	resp, err := i.SsrClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

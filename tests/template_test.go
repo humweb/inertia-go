@@ -1,7 +1,8 @@
-package inertia
+package tests
 
 import (
 	"github.com/stretchr/testify/suite"
+	"go-inertia/server/pkgs/inertia-go"
 	"html/template"
 	"testing"
 )
@@ -11,9 +12,9 @@ type InertiaTemplateTestSuite struct {
 }
 
 func (suite *InertiaTemplateTestSuite) TestTemplateMarshal() {
-	str, err := marshal(Page{
+	str, err := inertia.Marshal(inertia.Page{
 		Component: "Users",
-		Props:     Props{"username": "foobar"},
+		Props:     inertia.Props{"username": "foobar"},
 		URL:       "/users",
 		Version:   "1",
 	})
@@ -21,21 +22,21 @@ func (suite *InertiaTemplateTestSuite) TestTemplateMarshal() {
 	suite.Equal(template.JS("{\"component\":\"Users\",\"props\":{\"username\":\"foobar\"},\"url\":\"/users\",\"version\":\"1\"}"), str)
 }
 func (suite *InertiaTemplateTestSuite) TestTemplateMarshalErr() {
-	_, err := marshal(make(chan int))
+	_, err := inertia.Marshal(make(chan int))
 	suite.NotNil(err)
 }
 func (suite *InertiaTemplateTestSuite) TestTemplateRaw() {
-	str, err := raw([]string{"wtf", "123"})
+	str, err := inertia.Raw([]string{"wtf", "123"})
 	suite.Nil(err)
 	suite.Equal(template.HTML("wtf\n123"), str)
 
-	str, err = raw("wtf")
+	str, err = inertia.Raw("wtf")
 	suite.Nil(err)
 	suite.Equal(template.HTML("wtf"), str)
 }
 
 func (suite *InertiaTemplateTestSuite) TestTemplateRawErr() {
-	_, err := raw(make(chan int))
+	_, err := inertia.Raw(make(chan int))
 
 	suite.NotNil(err)
 

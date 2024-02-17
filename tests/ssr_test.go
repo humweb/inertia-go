@@ -1,8 +1,9 @@
-package inertia
+package tests
 
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/suite"
+	"go-inertia/server/pkgs/inertia-go"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,18 +14,18 @@ type InertiaSsrTestSuite struct {
 }
 
 func (suite *InertiaSsrTestSuite) TestEnableSsr() {
-	i := New("", "", "")
+	i := inertia.New("", "", "")
 	i.EnableSsr("ssr.test")
 
-	suite.Equal("ssr.test", i.ssrURL)
+	suite.Equal("ssr.test", i.SsrURL)
 }
 func (suite *InertiaSsrTestSuite) TestEnableSsrWithDefaults() {
-	i := New("", "", "")
+	i := inertia.New("", "", "")
 	i.EnableSsrWithDefault()
-	suite.Equal("http://127.0.0.1:13714", i.ssrURL)
+	suite.Equal("http://127.0.0.1:13714", i.SsrURL)
 }
 func (suite *InertiaSsrTestSuite) TestIsSsrEnabled() {
-	i := New("", "", "")
+	i := inertia.New("", "", "")
 
 	suite.False(i.IsSsrEnabled())
 	i.EnableSsrWithDefault()
@@ -32,16 +33,16 @@ func (suite *InertiaSsrTestSuite) TestIsSsrEnabled() {
 	suite.True(i.IsSsrEnabled())
 }
 func (suite *InertiaSsrTestSuite) TestDisableSsr() {
-	i := New("", "", "")
+	i := inertia.New("", "", "")
 	i.EnableSsrWithDefault()
 	i.DisableSsr()
 
 	suite.False(i.IsSsrEnabled())
-	suite.Nil(i.ssrClient)
+	suite.Nil(i.SsrClient)
 }
 
 func (suite *InertiaSsrTestSuite) TestSsrRequest() {
-	i := New("", "./index_test.html", "")
+	i := inertia.New("", "./index_test.html", "")
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/render" {
 			suite.Equal("/render", r.URL.Path)
@@ -49,7 +50,7 @@ func (suite *InertiaSsrTestSuite) TestSsrRequest() {
 		suite.Equal("application/json", r.Header.Get("Content-Type"))
 		w.WriteHeader(http.StatusOK)
 		ssr, _ := json.Marshal(
-			Ssr{
+			inertia.Ssr{
 				Head: []string{"header"},
 				Body: "body text"},
 		)
@@ -62,7 +63,7 @@ func (suite *InertiaSsrTestSuite) TestSsrRequest() {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/user", nil)
 
-	err := i.Render(w, r, "User", Props{
+	err := i.Render(w, r, "User", inertia.Props{
 		"user": "name",
 	})
 	suite.Nil(err)

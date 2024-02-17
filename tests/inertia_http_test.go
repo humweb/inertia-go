@@ -1,31 +1,26 @@
-package inertia
+package tests
 
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/suite"
+	"go-inertia/server/pkgs/inertia-go"
 	"html"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-// Define the suite, and absorb the built-in basic suite
-// functionality from testify - including assertion methods.
 type InertiaHttpTestSuite struct {
 	suite.Suite
 }
-
-//func (suite *InertiaHttpTestSuite) SetupSuite() {
-//	// Setup config and ENV variables
-//
-//}
+type Headers = map[string]string
 
 func (suite *InertiaHttpTestSuite) TestLocationInertiaRequest() {
 	w, r := mockRequest("GET", "/users", Headers{
 		"X-Inertia": "true",
 	})
 
-	i := New("", "", "")
+	i := inertia.New("", "", "")
 
 	i.Location(w, r, "/login")
 
@@ -36,7 +31,7 @@ func (suite *InertiaHttpTestSuite) TestLocationInertiaRequest() {
 func (suite *InertiaHttpTestSuite) TestLocationNonInertiaRequest() {
 	w, r := mockRequest("GET", "/users", Headers{})
 
-	i := New("", "", "")
+	i := inertia.New("", "", "")
 
 	i.Location(w, r, "/login")
 
@@ -47,7 +42,7 @@ func (suite *InertiaHttpTestSuite) TestLocationNonInertiaRequest() {
 func (suite *InertiaHttpTestSuite) TestLocationNonInertiaPostRequest() {
 	w, r := mockRequest("POST", "/users", Headers{})
 
-	i := New("", "", "")
+	i := inertia.New("", "", "")
 
 	i.Location(w, r, "/login")
 
@@ -60,7 +55,7 @@ func (suite *InertiaHttpTestSuite) TestLocationBackRequest() {
 		"Referer": "/foo",
 	})
 
-	i := New("", "", "")
+	i := inertia.New("", "", "")
 
 	i.Back(w, r)
 
@@ -74,18 +69,18 @@ func (suite *InertiaHttpTestSuite) TestShare() {
 		"X-Inertia": "true",
 	})
 
-	i := New("", "", "")
+	i := inertia.New("", "", "")
 	i.Share("title", "Page title")
-	ctx := i.WithProps(r.Context(), Props{"foo": "baz", "abc": "456", "ctx": "prop"})
+	ctx := i.WithProps(r.Context(), inertia.Props{"foo": "baz", "abc": "456", "ctx": "prop"})
 
-	err := i.Render(w, r.WithContext(ctx), "Users", Props{
+	err := i.Render(w, r.WithContext(ctx), "Users", inertia.Props{
 		"user": map[string]interface{}{
 			"name": "foo",
 		},
 	})
 
 	suite.Nil(err)
-	var page Page
+	var page inertia.Page
 	err = json.Unmarshal(w.Body.Bytes(), &page)
 	suite.Nil(err)
 
@@ -107,23 +102,23 @@ func (suite *InertiaHttpTestSuite) TestLazyProps() {
 		"X-Inertia-Partial-Data":      "lazy,user",
 	})
 
-	i := New("", "", "")
+	i := inertia.New("", "", "")
 	i.Share("title", "Page title")
-	ctx := i.WithProps(r.Context(), Props{
+	ctx := i.WithProps(r.Context(), inertia.Props{
 		"foo": "bar",
-		"lazy": LazyProp(func() (any, error) {
+		"lazy": inertia.LazyProp(func() (any, error) {
 			return "lazyprop", nil
 		}),
 	})
 
-	err := i.Render(w, r.WithContext(ctx), "Users", Props{
+	err := i.Render(w, r.WithContext(ctx), "Users", inertia.Props{
 		"user": map[string]interface{}{
 			"name": "foo",
 		},
 	})
 
 	suite.Nil(err)
-	var page Page
+	var page inertia.Page
 	err = json.Unmarshal(w.Body.Bytes(), &page)
 	suite.Nil(err)
 
@@ -142,15 +137,15 @@ func (suite *InertiaHttpTestSuite) TestLazyPropsWithoutOnly() {
 		"X-Inertia": "true",
 	})
 
-	i := New("", "", "")
+	i := inertia.New("", "", "")
 	i.Share("title", "Page title")
-	ctx := i.WithProps(r.Context(), Props{
+	ctx := i.WithProps(r.Context(), inertia.Props{
 		"foo": "bar",
-		"lazy": LazyProp(func() (any, error) {
+		"lazy": inertia.LazyProp(func() (any, error) {
 			return "lazyprop", nil
 		}),
 	})
-	ctx = i.WithProps(ctx, Props{
+	ctx = i.WithProps(ctx, inertia.Props{
 		"user": map[string]interface{}{
 			"name": "foo",
 		},
@@ -158,7 +153,7 @@ func (suite *InertiaHttpTestSuite) TestLazyPropsWithoutOnly() {
 	err := i.Render(w, r.WithContext(ctx), "Users", nil)
 
 	suite.Nil(err)
-	var page Page
+	var page inertia.Page
 	err = json.Unmarshal(w.Body.Bytes(), &page)
 	suite.Nil(err)
 
@@ -177,11 +172,11 @@ func (suite *InertiaHttpTestSuite) TestWithProp() {
 		"X-Inertia": "true",
 	})
 
-	i := New("", "", "")
+	i := inertia.New("", "", "")
 	ctx := i.WithProp(r.Context(), "foo", "bar")
 	ctx = i.WithProp(ctx, "ctx", "baz")
 
-	ctx = i.WithProps(ctx, Props{
+	ctx = i.WithProps(ctx, inertia.Props{
 		"user": map[string]interface{}{
 			"name": "foo",
 		},
@@ -189,7 +184,7 @@ func (suite *InertiaHttpTestSuite) TestWithProp() {
 	err := i.Render(w, r.WithContext(ctx), "Users", nil)
 
 	suite.Nil(err)
-	var page Page
+	var page inertia.Page
 	err = json.Unmarshal(w.Body.Bytes(), &page)
 	suite.Nil(err)
 
@@ -205,7 +200,7 @@ func (suite *InertiaHttpTestSuite) TestWithViewData() {
 
 	w, r := mockRequest("GET", "/users", Headers{})
 
-	i := New("", "./index_test.html", "")
+	i := inertia.New("", "./index_test.html", "")
 
 	ctx := i.WithViewData(r.Context(), "foo", "wtf-dude")
 
@@ -213,14 +208,14 @@ func (suite *InertiaHttpTestSuite) TestWithViewData() {
 
 	suite.Nil(err)
 
-	var page Page
+	var page inertia.Page
 	err = json.Unmarshal(w.Body.Bytes(), &page)
 
 	suite.Contains(html.UnescapeString(w.Body.String()), "wtf-dude")
 
 }
 func (suite *InertiaHttpTestSuite) TestMiddleware() {
-	i := New("", "./index_test.html", "")
+	i := inertia.New("", "./index_test.html", "")
 	w, r := mockRequest("GET", "/users", Headers{"X-Inertia": "true"})
 	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 
@@ -231,7 +226,7 @@ func (suite *InertiaHttpTestSuite) TestMiddleware() {
 
 }
 func (suite *InertiaHttpTestSuite) TestMiddlewareRedirect() {
-	i := New("", "./index_test.html", "2")
+	i := inertia.New("", "./index_test.html", "2")
 	w, r := mockRequest("GET", "/users", Headers{"X-Inertia": "true"})
 	called := false
 	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -246,7 +241,7 @@ func (suite *InertiaHttpTestSuite) TestMiddlewareRedirect() {
 
 }
 func (suite *InertiaHttpTestSuite) TestMiddlewareSkip() {
-	i := New("", "./index_test.html", "")
+	i := inertia.New("", "./index_test.html", "")
 	w, r := mockRequest("GET", "/users", Headers{})
 	called := false
 	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -269,5 +264,3 @@ func mockRequest(method string, target string, headers Headers) (*httptest.Respo
 	}
 	return w, r
 }
-
-type Headers = map[string]string

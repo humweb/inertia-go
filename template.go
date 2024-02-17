@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func marshal(v any) (template.JS, error) {
+func Marshal(v any) (template.JS, error) {
 	js, err := json.Marshal(v)
 	if err != nil {
 		return "", err
@@ -16,7 +16,7 @@ func marshal(v any) (template.JS, error) {
 	return template.JS(js), nil
 }
 
-func raw(v any) (template.HTML, error) {
+func Raw(v any) (template.HTML, error) {
 	elems, ok := v.([]string)
 	if ok {
 		html := strings.Join(elems, "\n")
@@ -29,5 +29,5 @@ func raw(v any) (template.HTML, error) {
 		return template.HTML(elem), nil
 	}
 
-	return "", errors.New("Error with raw template func")
+	return "", errors.New("Error with Raw template func")
 }

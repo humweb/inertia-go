@@ -11,11 +11,11 @@ import (
 // https://inertiajs.com/partial-reloads
 type LazyProp func() (any, error)
 
-func (i *Inertia) prepareProps(r *http.Request, component string, props Props) (Props, error) {
+func (i *Inertia) PrepareProps(r *http.Request, component string, props Props) (Props, error) {
 	result := make(Props)
 
 	// Add shared props to the result.
-	for key, val := range i.sharedProps {
+	for key, val := range i.SharedProps {
 		result[key] = val
 	}
 
@@ -69,7 +69,7 @@ func (i *Inertia) prepareProps(r *http.Request, component string, props Props) (
 
 	// Resolve props values.
 	for key, val := range result {
-		val, err := resolvePropVal(val)
+		val, err := ResolvePropVal(val)
 		if err != nil {
 			return nil, fmt.Errorf("resolve prop value: %w", err)
 		}
@@ -79,7 +79,7 @@ func (i *Inertia) prepareProps(r *http.Request, component string, props Props) (
 	return result, nil
 }
 
-func resolvePropVal(val any) (any, error) {
+func ResolvePropVal(val any) (any, error) {
 	var err error
 	if closure, ok := val.(func() (any, error)); ok {
 		if val, err = closure(); err != nil {

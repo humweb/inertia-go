@@ -1,40 +1,34 @@
-package inertia
+package tests
 
 import (
 	"context"
 	"errors"
 	"github.com/stretchr/testify/suite"
+	"go-inertia/server/pkgs/inertia-go"
 	"testing"
 )
 
-// Define the suite, and absorb the built-in basic suite
-// functionality from testify - including assertion methods.
 type InertiaTestSuite struct {
 	suite.Suite
 }
 
-//func (suite *InertiaTestSuite) SetupSuite() {
-//	// Setup config and ENV variables
-//
-//}
-
 func (suite *InertiaTestSuite) TestShare() {
-	i := New("", "", "")
-	i.Share("title", "Inertia.js Go")
+	i := inertia.New("", "", "")
+	i.Share("title", "Page title")
 
-	title, ok := i.sharedProps["title"].(string)
+	title, ok := i.SharedProps["title"].(string)
 
 	suite.True(ok)
-	suite.Equal("Inertia.js Go", title)
+	suite.Equal("Page title", title)
 }
 
 func (suite *InertiaTestSuite) TestShareFunc() {
-	i := New("", "", "")
+	i := inertia.New("", "", "")
 	i.ShareFunc("asset", func(path string) (string, error) {
 		return "/" + path, nil
 	})
 
-	_, ok := i.sharedFuncMap["asset"].(func(string) (string, error))
+	_, ok := i.SharedFuncMap["asset"].(func(string) (string, error))
 	suite.True(ok)
 	//t.Error("expected: asset func, got: empty value")
 }
@@ -42,10 +36,10 @@ func (suite *InertiaTestSuite) TestShareFunc() {
 func (suite *InertiaTestSuite) TestWithProp() {
 	ctx := context.TODO()
 
-	i := New("", "", "")
+	i := inertia.New("", "", "")
 	ctx = i.WithProp(ctx, "user", "test-user")
 
-	contextProps, ok := ctx.Value(ContextKeyProps).(Props)
+	contextProps, ok := ctx.Value(inertia.ContextKeyProps).(inertia.Props)
 	suite.True(ok)
 
 	user, ok := contextProps["user"].(string)
@@ -57,10 +51,10 @@ func (suite *InertiaTestSuite) TestWithProp() {
 func (suite *InertiaTestSuite) TestWithViewData() {
 	ctx := context.TODO()
 
-	i := New("", "", "")
+	i := inertia.New("", "", "")
 	ctx = i.WithViewData(ctx, "meta", "test-meta")
 
-	contextViewData, ok := ctx.Value(ContextKeyViewData).(Props)
+	contextViewData, ok := ctx.Value(inertia.ContextKeyViewData).(inertia.Props)
 	suite.True(ok)
 
 	meta, ok := contextViewData["meta"].(string)
@@ -73,13 +67,13 @@ func (suite *InertiaTestSuite) TestWithViewData() {
 
 func (suite *InertiaTestSuite) TestResolvePropsClosure() {
 
-	val, err := resolvePropVal(func() (any, error) {
+	val, err := inertia.ResolvePropVal(func() (any, error) {
 		return "foo", nil
 	})
 	suite.Equal("foo", val)
 	suite.Nil(err)
 
-	val, err = resolvePropVal(func() (any, error) {
+	val, err = inertia.ResolvePropVal(func() (any, error) {
 		return nil, errors.New("nothing")
 	})
 	suite.Error(err)
@@ -89,14 +83,14 @@ func (suite *InertiaTestSuite) TestResolvePropsClosure() {
 
 func (suite *InertiaTestSuite) TestResolvePropsLazy() {
 
-	val, err := resolvePropVal(LazyProp(func() (any, error) {
+	val, err := inertia.ResolvePropVal(inertia.LazyProp(func() (any, error) {
 		return "foo", nil
 	}))
 
 	suite.Equal("foo", val)
 	suite.Nil(err)
 
-	val, err = resolvePropVal(LazyProp(func() (any, error) {
+	val, err = inertia.ResolvePropVal(inertia.LazyProp(func() (any, error) {
 		return nil, errors.New("nothing")
 	}))
 	suite.Error(err)
