@@ -79,10 +79,10 @@ func (i *Inertia) prepareProps(r *http.Request, component string, props Props) (
 	return result, nil
 }
 
-func resolvePropVal(val any) (_ any, err error) {
+func resolvePropVal(val any) (any, error) {
+	var err error
 	if closure, ok := val.(func() (any, error)); ok {
-		val, err = closure()
-		if err != nil {
+		if val, err = closure(); err != nil {
 			return nil, fmt.Errorf("closure prop resolving: %w", err)
 		}
 	} else if lazy, ok := val.(LazyProp); ok {
