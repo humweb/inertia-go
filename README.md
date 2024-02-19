@@ -10,6 +10,9 @@
 
 The Inertia.js server-side adapter for Go. Visit [inertiajs.com](https://inertiajs.com) to learn more.
 
+
+Example App https://github.com/humweb/inertia-go-vue-example
+
 ## Installation
 
 Install the package using the `go get` command:
