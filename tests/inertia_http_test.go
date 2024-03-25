@@ -214,6 +214,27 @@ func (suite *InertiaHttpTestSuite) TestWithViewData() {
 	suite.Contains(html.UnescapeString(w.Body.String()), "wtf-dude")
 
 }
+
+func (suite *InertiaHttpTestSuite) TestRenderClosureProp() {
+
+	w, r := mockRequest("GET", "/users", Headers{})
+
+	i := inertia.New("", "./index_test.html", "")
+
+	err := i.Render(w, r, "Users", inertia.Props{
+		"album": func() (any, error) {
+			return "wtf-dude", nil
+		},
+	})
+
+	suite.Nil(err)
+
+	var page inertia.Page
+	err = json.Unmarshal(w.Body.Bytes(), &page)
+
+	suite.Contains(html.UnescapeString(w.Body.String()), "wtf-dude")
+
+}
 func (suite *InertiaHttpTestSuite) TestMiddleware() {
 	i := inertia.New("", "./index_test.html", "")
 	w, r := mockRequest("GET", "/users", Headers{"X-Inertia": "true"})
