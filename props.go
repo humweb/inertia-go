@@ -13,6 +13,10 @@ type LazyProp func() (any, error)
 
 func (i *Inertia) PrepareProps(r *http.Request, component string, props Props) (Props, error) {
 
+	if props == nil {
+		props = make(Props)
+	}
+
 	isPartial := r.Header.Get(Headers.PartialComponent) == component
 
 	// Merge props and shared props
