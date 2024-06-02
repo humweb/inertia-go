@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/humweb/inertia-go"
 	"github.com/stretchr/testify/suite"
@@ -261,6 +262,17 @@ func (suite *InertiaHttpTestSuite) TestMiddlewareRedirect() {
 	suite.Equal("/users", resp.Header.Get("X-Inertia-Location"))
 
 }
+
+func (suite *InertiaHttpTestSuite) TestPreparePropsErrors() {
+	i := inertia.New("", "./index_test.html", "2")
+	_, r := mockRequest("GET", "/users", Headers{"X-Inertia": "true"})
+
+	props, err := i.PrepareProps(r.WithContext(context.WithValue(r.Context(), inertia.ContextKeyProps, 1)), "Users", nil)
+
+	suite.NotNil(err)
+	suite.Nil(props)
+}
+
 func (suite *InertiaHttpTestSuite) TestMiddlewareSkip() {
 	i := inertia.New("", "./index_test.html", "")
 	w, r := mockRequest("GET", "/users", Headers{})
