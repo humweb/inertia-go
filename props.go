@@ -12,11 +12,14 @@ import (
 type LazyProp func() (any, error)
 
 func (i *Inertia) PrepareProps(r *http.Request, component string, props Props) (Props, error) {
-	result := make(Props)
 
-	// Add shared props to the result.
-	for key, val := range i.SharedProps {
-		result[key] = val
+	isPartial := r.Header.Get(Headers.PartialComponent) == component
+
+	// Merge props and shared props
+	for k, v := range i.SharedProps {
+		if _, ok := props[k]; !ok {
+			props[k] = v
+		}
 	}
 
 	// Add props from context to the result.
@@ -29,21 +32,16 @@ func (i *Inertia) PrepareProps(r *http.Request, component string, props Props) (
 		}
 
 		for key, value := range contextProps {
-			result[key] = value
+			props[key] = value
 		}
 	}
 
-	// Add passed props to the result.
-	for key, val := range props {
-		result[key] = val
-	}
-
 	// Get props keys to return. If len == 0, then return all.
-	partial := r.Header.Get("X-Inertia-Partial-Data")
-	data := strings.Split(partial, ",")
+	partials := r.Header.Get(Headers.PartialOnly)
+	data := strings.Split(partials, ",")
 	only := make(map[string]struct{}, len(data))
 
-	if partial != "" && r.Header.Get("X-Inertia-Partial-Component") == component {
+	if partials != "" && isPartial {
 		for _, value := range data {
 			only[value] = struct{}{}
 		}
@@ -51,32 +49,32 @@ func (i *Inertia) PrepareProps(r *http.Request, component string, props Props) (
 
 	// Filter props.
 	if len(only) > 0 {
-		// While making partial requests:
+		// While making partials requests:
 		// Use the `only` property to specify which data the server should return.
-		for key := range result {
+		for key := range props {
 			if _, ok := only[key]; !ok {
-				delete(result, key)
+				delete(props, key)
 			}
 		}
 	} else {
 		// Lazy props should only be evaluated when required using the `only` property
-		for key, val := range result {
+		for key, val := range props {
 			if _, ok := val.(LazyProp); ok {
-				delete(result, key)
+				delete(props, key)
 			}
 		}
 	}
 
 	// Resolve props values.
-	for key, val := range result {
+	for key, val := range props {
 		val, err := ResolvePropVal(val)
 		if err != nil {
 			return nil, fmt.Errorf("resolve prop value: %w", err)
 		}
-		result[key] = val
+		props[key] = val
 	}
 
-	return result, nil
+	return props, nil
 }
 
 func ResolvePropVal(val any) (any, error) {
