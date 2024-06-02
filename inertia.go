@@ -147,7 +147,7 @@ func (i *Inertia) Render(w http.ResponseWriter, r *http.Request, component strin
 		}
 
 		w.Header().Set("Vary", "Accept")
-		w.Header().Set("X-Inertia", "true")
+		w.Header().Set(Headers.Inertia, "true")
 		w.Header().Set("Content-Type", "application/json")
 
 		_, err = w.Write(js)
@@ -203,7 +203,7 @@ func (i *Inertia) Render(w http.ResponseWriter, r *http.Request, component strin
 // Location function.
 func (i *Inertia) Location(w http.ResponseWriter, r *http.Request, url string) {
 	if i.isInertiaRequest(r) {
-		w.Header().Set("X-Inertia-Location", url)
+		w.Header().Set(Headers.Location, url)
 		w.WriteHeader(http.StatusConflict)
 	} else if r.Method == http.MethodPost || r.Method == http.MethodPatch || r.Method == http.MethodPut {
 		http.Redirect(w, r, url, http.StatusSeeOther)
@@ -217,7 +217,7 @@ func (i *Inertia) Back(w http.ResponseWriter, r *http.Request) {
 }
 
 func (i *Inertia) isInertiaRequest(r *http.Request) bool {
-	return r.Header.Get("X-Inertia") != ""
+	return r.Header.Get(Headers.Inertia) != ""
 }
 
 func (i *Inertia) createRootTemplate() (*template.Template, error) {
