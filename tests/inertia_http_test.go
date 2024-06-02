@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"github.com/humweb/inertia-go"
 	"github.com/stretchr/testify/suite"
@@ -10,6 +11,9 @@ import (
 	"net/http/httptest"
 	"testing"
 )
+
+//go:embed index_test.html
+var templateFS embed.FS
 
 type InertiaHttpTestSuite struct {
 	suite.Suite
@@ -71,6 +75,38 @@ func (suite *InertiaHttpTestSuite) TestShare() {
 	})
 
 	i := inertia.New("", "", "")
+	i.Share("title", "Page title")
+	ctx := i.WithProps(r.Context(), inertia.Props{"foo": "baz", "abc": "456", "ctx": "prop"})
+
+	err := i.Render(w, r.WithContext(ctx), "Users", inertia.Props{
+		"user": map[string]interface{}{
+			"name": "foo",
+		},
+	})
+
+	suite.Nil(err)
+	var page inertia.Page
+	err = json.Unmarshal(w.Body.Bytes(), &page)
+	suite.Nil(err)
+
+	suite.Equal("Users", page.Component)
+
+	user := page.Props["user"].(map[string]interface{})
+	suite.Equal("foo", user["name"])
+	suite.Equal("Page title", page.Props["title"])
+	suite.Equal("baz", page.Props["foo"])
+	suite.Equal("456", page.Props["abc"])
+	suite.Equal("prop", page.Props["ctx"])
+}
+
+func (suite *InertiaHttpTestSuite) TestNewWithFS() {
+
+	w, r := mockRequest("GET", "/users", Headers{
+		"X-Inertia": "true",
+	})
+
+	i := inertia.NewWithFS("", "", "", templateFS)
+
 	i.Share("title", "Page title")
 	ctx := i.WithProps(r.Context(), inertia.Props{"foo": "baz", "abc": "456", "ctx": "prop"})
 
